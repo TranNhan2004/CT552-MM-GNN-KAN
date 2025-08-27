@@ -1,0 +1,35 @@
+<nav class="flex items-center justify-between bg-fuchsia-600 text-white px-6 py-3 shadow-md">
+  <div class="flex items-center space-x-2">
+    <div class="w-10 h-10 flex items-center justify-center rounded-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#e3e3e3">
+        <path
+          d="M160-120v-200q0-33 23.5-56.5T240-400h480q33 0 56.5 23.5T800-320v200H160Zm200-320q-83 0-141.5-58.5T160-640q0-83 58.5-141.5T360-840h240q83 0 141.5 58.5T800-640q0 83-58.5 141.5T600-440H360ZM240-200h480v-120H240v120Zm120-320h240q50 0 85-35t35-85q0-50-35-85t-85-35H360q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0-80q17 0 28.5-11.5T400-640q0-17-11.5-28.5T360-680q-17 0-28.5 11.5T320-640q0 17 11.5 28.5T360-600Zm240 0q17 0 28.5-11.5T640-640q0-17-11.5-28.5T600-680q-17 0-28.5 11.5T560-640q0 17 11.5 28.5T600-600ZM480-200Zm0-440Z" />
+      </svg>
+    </div>
+    <span class="font-semibold text-2xl">Cipher</span>
+  </div>
+
+  <div class="relative">
+    <button (click)="toggleDropdown()"
+      class="flex items-center space-x-2 bg-fuchsia-200 text-black px-3 py-2 rounded-lg hover:bg-fuchsia-300 transition">
+      <span>{{ selectedModel }}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+        <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" />
+      </svg>
+    </button>
+
+    @if (dropdownOpen) {
+    <div class="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-20">
+      <ul>
+        @for (model of models; track $index) {
+        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+          <button (click)="selectModel(model)" class="w-full h-full text-left">
+            {{ model }}
+          </button>
+        </li>
+        }
+      </ul>
+    </div>
+    }
+  </div>
+</nav>
