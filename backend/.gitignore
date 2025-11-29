@@ -75,3 +75,4 @@ dmypy.json
 
 # Docker
 docker-compose.override.yml
+ai_models/
