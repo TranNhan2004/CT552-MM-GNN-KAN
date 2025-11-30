@@ -10,6 +10,15 @@ class UploadService:
     def __init__(self, upload_root_path: str) -> None:
         self.upload_root_path = Path(upload_root_path)
 
+    def clean_audio(self, upload_dir: str) -> None:
+        full_path = self.upload_root_path / upload_dir
+        if not full_path.exists() or not full_path.is_dir():
+            return
+
+        for f in full_path.iterdir():
+            if f.is_file() and f.suffix.lower() in {".mp3", ".wav"}:
+                f.unlink()
+
     def upload(self, files: List, upload_dir: str) -> Tuple[List[str], str, List[str]]:
         image_urls: List[str] = []
         audio_urls: List[str] = []
@@ -18,18 +27,20 @@ class UploadService:
         full_path = self.upload_root_path / upload_dir
         full_path.mkdir(parents=True, exist_ok=True)
 
+        self._check_images(files)
+
         for f in files:
             ext = f.filename.split(".")[-1].lower()
             save_path = full_path / f.filename
 
-            if ext not in ("png", "jpg", "jpeg", "wav", "mp3", "txt", "mp4"):
+            if ext not in {"png", "jpg", "jpeg", "wav", "mp3", "txt", "mp4"}:
                 continue 
 
             save_path = self._save_file(f, save_path)
 
-            if ext in ("png", "jpg", "jpeg"):
+            if ext in {"png", "jpg", "jpeg"}:
                 image_urls.append(str(save_path))
-            elif ext in ("wav", "mp3"):
+            elif ext in {"mp3", "wav"}:
                 audio_urls.append(str(save_path))
             elif ext == "txt":
                 with open(save_path, "r", encoding="utf-8") as txt_file:
@@ -46,6 +57,14 @@ class UploadService:
                     raise ValueError(f"Lỗi video {save_path}: {e}")
 
         return image_urls, text, audio_urls
+    
+    def _check_images(self, files: List) -> None:
+        has_image = any(
+            f.filename.split(".")[-1].lower() in {"png", "jpg", "jpeg"} 
+            for f in files
+        )
+        if not has_image:
+            raise ValueError("Phải có ít nhất một file ảnh (.png, .jpg, .jpeg)")
 
     def _safe_save_path(self, file_path: Path) -> Path:
         timestamp = int(time.time() * 1000)  

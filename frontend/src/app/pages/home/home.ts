@@ -1,96 +1,95 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { AIService } from '../../services/ai';
 import { HttpErrorResponse } from '@angular/common/http';
-import { env } from '../../environments/env.dev';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import { FileUploader } from "../../components/file-uploader/file-uploader";
+import { Icon } from "../../components/icon/icon";
+import { ResultDisplay } from "../../components/result-display/result-display";
+import { AIService } from '../../services/ai';
+import { ModelService } from '../../services/model';
+import { UploadedFile } from '../../types/file';
+import { ModelType } from '../../types/model';
+import { ResultRes } from '../../types/result';
 
-interface AcceptedFile {
-  id: string;
-  type: 'video' | 'image' | 'text' | 'audio';
-  file: File;
-}
+const MOCK_RESULT: ResultRes = {
+  id: 1,
+  text: "",
+  processedTexts: [],
+  audioUrls: [],
+  imageUrls: [],
+  labelIdx: 0,
+  labelName: "abc",
+  prob: 0.5,
+  weights: []
+};
 
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule],
+  imports: [FormsModule, FileUploader, ResultDisplay, Icon],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
-export class Home {
-  uploadedFiles: AcceptedFile[] = [];
-  text: string = "";
-  result: string = "";
+export class Home implements OnInit, OnDestroy {
+  text: string = '';
+  uploadedFiles: UploadedFile[] = [];
+  result: ResultRes | null = MOCK_RESULT;
+  isLoading: boolean = false;
+  errorMessage: string = '';
+  selectedModel: ModelType = 'mobilenetv3small';
 
-  private fileLimits: Record<AcceptedFile['type'], number> = {
-    video: 5,
-    image: 10,
-    text: 10,
-    audio: 10
-  };
+  private destroy$ = new Subject<void>();
 
-  constructor(private aiService: AIService) { }
+  constructor(
+    private aiService: AIService,
+    private modelService: ModelService
+  ) {}
 
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  ngOnInit() {
+    this.modelService.selectedModel$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(model => {
+        this.selectedModel = model;
+      });
   }
 
-  onFileSelected(event: Event, type: AcceptedFile['type']) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-
-    const files = Array.from(input.files);
-    const existing = this.uploadedFiles.filter(f => f.type === type);
-
-    const availableSlots = this.fileLimits[type] - existing.length;
-    if (availableSlots <= 0) {
-      alert(`Bạn chỉ có thể tải tối đa ${this.fileLimits[type]} ${type}.`);
-      input.value = '';
-      return;
-    }
-
-    const toAdd = files.slice(0, availableSlots);
-
-    const newFiles = toAdd.filter(
-      file =>
-        !existing.some(f => f.file.name === file.name && f.file.size === file.size)
-    );
-
-    this.uploadedFiles = [
-      ...this.uploadedFiles,
-      ...newFiles.map(file => ({
-        id: this.generateId(),
-        type,
-        file
-      }))
-    ];
-
-    input.value = '';
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  removeFile(id: string) {
-    this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== id);
+  onFilesChanged(files: UploadedFile[]) {
+    this.uploadedFiles = files;
+    this.errorMessage = '';
   }
 
   onSubmit() {
     if (!this.text.trim() && this.uploadedFiles.length === 0) {
-      alert('Vui lòng nhập văn bản hoặc tải lên ít nhất 1 file.');
+      this.errorMessage = 'Vui lòng nhập văn bản hoặc tải lên ít nhất 1 file.';
       return;
     }
 
-    console.log('Văn bản đã nhập', this.text);
-    console.log('Files đã upload:', this.uploadedFiles);
+    const images = this.uploadedFiles.filter(f => f.type === 'image');
+    if (images.length < 3) {
+      this.errorMessage = 'Vui lòng tải lên ít nhất 3 hình ảnh (bắt buộc).';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.isLoading = true;
 
     const files = this.uploadedFiles.map(item => item.file);
-    this.aiService.predict(this.text, files).subscribe({
+
+    this.aiService.predict(this.selectedModel, this.text, files).subscribe({
       next: (res) => {
-        this.result = JSON.stringify(res);
+        this.result = res;
+        this.isLoading = false;
       },
       error: (err: HttpErrorResponse) => {
-        if (!env.production) {
-          console.log(err);
-        }
+        this.errorMessage = 'Đã xảy ra lỗi khi dự đoán. Vui lòng thử lại.';
+        this.isLoading = false;
+        console.error(err);
       }
-    })
+    });
   }
 }

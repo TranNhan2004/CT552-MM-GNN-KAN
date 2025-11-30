@@ -1,90 +1,69 @@
-<div class="grid grid-cols-2 gap-6 p-6 min-h-screen bg-gray-50">
-  <div class="flex flex-col space-y-4">
-    @if (uploadedFiles.length > 0) {
-    <div class="flex flex-wrap gap-2">
-      @for (item of uploadedFiles; track item.id) {
-      <div class="flex items-center bg-fuchsia-100 text-fuchsia-700 px-3 py-1 rounded-lg shadow-sm">
-        <span class="text-sm">{{ item.file.name }}</span>
-        <button (click)="removeFile(item.id)" class="ml-2 hover:text-red-500">
-          <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px"
-            fill="currentColor">
-            <path
-              d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
-          </svg>
-        </button>
-      </div>
-      }
-    </div>
-    }
-
-
-    <textarea placeholder="Nhập văn bản..." class="w-full h-40 p-3 border bg-white border-gray-300 rounded-lg resize-none focus:ring-2
-      focus:ring-fuchsia-500 focus:outline-none" [(ngModel)]="text">
-    </textarea>
-
-    <div class="flex items-center space-x-2">
-      <label
-        class="flex items-center space-x-2 w-fit bg-purple-500 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition cursor-pointer"
-        title=".mp4">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-          <path
-            d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-        </svg>
-        <span>Tải video lên</span>
-        <input type="file" accept=".mp4" multiple hidden (change)="onFileSelected($event, 'video')">
-      </label>
-
-      <label
-        class="flex items-center space-x-2 w-fit bg-purple-500 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition cursor-pointer"
-        title=".jpg, .png, .jpeg">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-          <path
-            d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-        </svg>
-        <span>Tải ảnh lên</span>
-        <input type="file" accept=".jpg,.png,.jpeg" multiple hidden (change)="onFileSelected($event, 'image')">
-      </label>
-
-      <label
-        class="flex items-center space-x-2 w-fit bg-purple-500 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition cursor-pointer"
-        title=".txt, .pdf">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-          <path
-            d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-        </svg>
-        <span>Tải văn bản lên</span>
-        <input type="file" accept=".txt,.pdf" multiple hidden (change)="onFileSelected($event, 'text')">
-      </label>
-
-      <label
-        class="flex items-center space-x-2 w-fit bg-purple-500 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-600 transition cursor-pointer"
-        title=".mp3, .wav">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-          <path
-            d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-        </svg>
-        <span>Tải âm thanh lên</span>
-        <input type="file" accept=".mp3,.wav" multiple hidden (change)="onFileSelected($event, 'audio')">
-      </label>
-    </div>
-
-    <button
-      class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold shadow-md hover:bg-purple-700 transition"
-      (click)="onSubmit()">
-      Dự đoán
-    </button>
+<!-- pages/home/home.component.html -->
+<div class="container mx-auto px-4 py-6 max-w-7xl">
+  <!-- Graph Display Section -->
+  <div class="mb-6">
+    <!-- <app-graph-display [result]="result" /> -->
   </div>
 
-  <div class="flex flex-col space-y-4">
-    <div class="flex-1 bg-white border border-gray-300 rounded-lg shadow p-4">
-      <p class="text-gray-500 text-center">Đồ thị</p>
+  <!-- Main Grid: Input & Result -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left: Input Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-cyan-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-green-300 via-cyan-400 to-blue-500 px-6 py-4">
+        <h2 class="text-xl font-bold text-white">Ô nhập liệu</h2>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Text Input -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Văn bản
+          </label>
+          <textarea [(ngModel)]="text" placeholder="Nhập văn bản của bạn tại đây..." class="w-full h-40 p-4 border-2 border-gray-200 rounded-lg resize-none
+                   focus:ring-2 focus:ring-cyan-400 focus:border-transparent
+                   transition duration-200 text-gray-700 placeholder-gray-400"></textarea>
+        </div>
+
+        <!-- Error Message -->
+        @if (errorMessage) {
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+          <div class="flex items-center">
+            <app-icon name="x-circle" className="w-5 h-5 text-red-500 mr-2" />
+            <p class="text-sm text-red-700 font-medium">{{ errorMessage }}</p>
+          </div>
+        </div>
+        }
+
+        <!-- File Uploader and Predict Button -->
+        <div class="flex items-center justify-between pt-2">
+          <app-file-uploader (filesChanged)="onFilesChanged($event)" />
+
+          <button (click)="onSubmit()" [disabled]="isLoading" class="bg-gradient-to-r from-green-300 to-blue-500 text-white px-8 py-3
+                   rounded-lg font-semibold shadow-md hover:shadow-lg
+                   hover:from-green-500 hover:to-blue-700
+                   transition-all duration-200 transform hover:scale-105
+                   disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                   flex items-center space-x-2">
+            @if (isLoading) {
+            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            <span>Đang xử lý...</span>
+            } @else {
+            <app-icon name="sparkles" className="h-5 w-5" />
+            <span class="font-bold">Dự đoán</span>
+            }
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="flex-1 bg-white border border-gray-300 rounded-lg shadow p-4 overflow-auto">
-      <p class="text-gray-500 text-center">Kết quả</p>
-      <div class="space-y-2 mt-4">
-        {{ result }}
-      </div>
+    <!-- Right: Result Section -->
+    <div>
+      <app-result-display [result]="result" [isLoading]="isLoading" />
     </div>
   </div>
 </div>

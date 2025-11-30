@@ -43,10 +43,45 @@ class ResultService:
                 value.label_idx,
                 value.label_name,
                 value.prob,
-                json.dumps(value.weights) if value.weights else None
+                json.dumps(value.weights) 
             ))
             conn.commit()
             value.id = cursor.lastrowid
+            return value
+
+    def update(self, value: ResultModel) -> Optional[ResultModel]:
+        if value.id is None:
+            raise ValueError("ResultModel.id must be set to update record.")
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            UPDATE result
+            SET image_urls = ?,
+                audio_urls = ?,
+                text = ?,
+                processed_text = ?,
+                label_idx = ?,
+                label_name = ?,
+                prob = ?,
+                weights = ?
+            WHERE id = ?
+            """, (
+                json.dumps(value.image_urls),
+                json.dumps(value.audio_urls),
+                value.text,
+                json.dumps(value.processed_text),
+                value.label_idx,
+                value.label_name,
+                value.prob,
+                json.dumps(value.weights),
+                value.id
+            ))
+            conn.commit()
+
+            if cursor.rowcount == 0:
+                return None
+
             return value
 
     def find(self, id: int) -> Optional[ResultModel]:
@@ -66,7 +101,7 @@ class ResultService:
                 label_idx=row[5],
                 label_name=row[6],
                 prob=row[7],
-                weights=json.loads(row[8]) if row[8] else None
+                weights=json.loads(row[8]) 
             )
 
     def find_last_id(self) -> int | None:

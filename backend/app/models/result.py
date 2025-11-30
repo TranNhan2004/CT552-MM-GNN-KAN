@@ -13,4 +13,4 @@ class ResultModel(BaseModel):
     weights: List[List[float]] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
