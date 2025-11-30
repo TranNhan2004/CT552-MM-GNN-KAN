@@ -149,36 +149,6 @@ export class FileUploader {
     return labels[type];
   }
 
-  getTypeIcon(type: UploadedFile['type']): string {
-    const icons = {
-      video: '🎥',
-      image: '🖼️',
-      text: '📄',
-      audio: '🎵'
-    };
-    return icons[type];
-  }
-
-  getTypeColor(type: UploadedFile['type']): string {
-    const colors = {
-      video: 'from-blue-500 to-blue-600',
-      image: 'from-green-500 to-green-600',
-      text: 'from-yellow-500 to-yellow-600',
-      audio: 'from-purple-500 to-purple-600'
-    };
-    return colors[type];
-  }
-
-  getTypeBgColor(type: UploadedFile['type']): string {
-    const colors = {
-      video: 'bg-blue-50 border-blue-200',
-      image: 'bg-green-50 border-green-200',
-      text: 'bg-yellow-50 border-yellow-200',
-      audio: 'bg-purple-50 border-purple-200'
-    };
-    return colors[type];
-  }
-
   getFileCount(type: UploadedFile['type']): number {
     return this.uploadedFiles.filter(f => f.type === type).length;
   }
