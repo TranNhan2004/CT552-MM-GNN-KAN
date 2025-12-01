@@ -1,7 +1,8 @@
-from typing import List
 import uvicorn
-import shutil, json, numpy as np
+import logging
 
+from typing import List
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,6 +14,9 @@ from app.ai.text_helpers import TextHelpers
 from app.services.preprocess import PreprocessService
 from app.services.process import ProcessService
 from app.models.image import ImageModelType
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI()
 
@@ -58,17 +62,17 @@ async def predict(
         audios_subgraph = preprocess_service.preprocess_audios(audio_urls)
 
         only_image_graph = process_service.build_graph(images_subgraph, [], [])
-        coarse_pred = process_service.predict(only_image_graph)
+        coarse_pred = process_service.predict(only_image_graph, model_name)
 
         if coarse_pred["label_name"] in NOT_USE_AUDIO:
             upload_service.clean_audio(upload_dir)
             audio_urls = []
             audios_subgraph = []
             graph = process_service.build_graph(images_subgraph, texts_subgraph, [])
-            pred = process_service.predict(graph)
+            pred = process_service.predict(graph, model_name)
         else:
             graph = process_service.build_graph(images_subgraph, texts_subgraph, audios_subgraph)
-            pred = process_service.predict(graph)
+            pred = process_service.predict(graph, model_name)
 
 
         result_model = ResultModel(
@@ -86,16 +90,20 @@ async def predict(
         return JSONResponse(result_model.model_dump_json())
     
     except Exception as e:
+        upload_service.clean_all(upload_dir)
+        logger.exception("Lỗi khi predict:")
         return JSONResponse({"error": f"{e}"}, status_code=400)
 
 
-@app.get("/api/result/{id}")
+@app.get("/api/results/{id}")
 async def get_result(id: int):
     record = result_service.find(id)
     if not record:
         return JSONResponse({"error": f"Không tìm thấy kết quả với ID={id}"}, status_code=404)
     return JSONResponse(record.model_dump_json())
 
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 if __name__ == "__main__":
     uvicorn.run(

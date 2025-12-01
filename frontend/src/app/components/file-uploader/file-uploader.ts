@@ -9,7 +9,7 @@ import { Icon } from "../icon/icon";
   styleUrl: './file-uploader.css'
 })
 export class FileUploader {
-   @Output() filesChanged = new EventEmitter<UploadedFile[]>();
+  @Output() filesChanged = new EventEmitter<UploadedFile[]>();
 
   uploadedFiles: UploadedFile[] = [];
   showModal: boolean = false;
@@ -28,7 +28,7 @@ export class FileUploader {
       accept: '.txt'
     },
     audio: {
-      min: 0, max: 20, minDuration: 5, maxDuration: 10, required: false,
+      min: 0, max: 1, minDuration: 30, maxDuration: 120, required: false,
       accept: '.mp3,.wav'
     }
   };

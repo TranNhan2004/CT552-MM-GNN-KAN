@@ -20,15 +20,17 @@ export class AIService {
       formData.append('files', file, file.name);
     });
 
-    return this.httpClient.post(`${env.apiUrl}/predict`, formData).pipe(
-      map((res: any) => keysToCamel(res) as ResultRes)
+    return this.httpClient.post(`${env.apiUrl}/api/predict`, formData).pipe(
+      map((res: any) => keysToCamel(JSON.parse(res)) as ResultRes)
     );
   }
 
   get(id: number) {
-    return this.httpClient.get(`${env.apiUrl}/result/${id}`).pipe(
-      map((res: any) => keysToCamel(res) as ResultRes)
-    );;
+    return this.httpClient.get(`${env.apiUrl}/api/results/${id}`).pipe(
+      map((res: any) => {
+        return keysToCamel(JSON.parse(res)) as ResultRes;
+      })
+    );
   }
 
 }

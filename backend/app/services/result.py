@@ -19,7 +19,7 @@ class ResultService:
                 image_urls TEXT,
                 audio_urls TEXT,
                 text TEXT,
-                processed_text TEXT,
+                processed_texts TEXT,
                 label_idx INTEGER,
                 label_name TEXT,
                 prob REAL,
@@ -33,13 +33,13 @@ class ResultService:
             cursor = conn.cursor()
             cursor.execute("""
             INSERT INTO result (
-                image_urls, audio_urls, text, processed_text, label_idx, label_name, prob, weights
+                image_urls, audio_urls, text, processed_texts, label_idx, label_name, prob, weights
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 json.dumps(value.image_urls),
                 json.dumps(value.audio_urls),
                 value.text,
-                json.dumps(value.processed_text),
+                json.dumps(value.processed_texts),
                 value.label_idx,
                 value.label_name,
                 value.prob,

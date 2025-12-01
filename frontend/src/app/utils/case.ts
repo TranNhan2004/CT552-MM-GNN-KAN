@@ -1,28 +1,27 @@
-function camelToSnake(str: string): string {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-}
+const isObject = (o: any) => {
+  return o === Object(o) && !Array.isArray(o) && typeof o !== 'function';
+};
 
 function snakeToCamel(str: string): string {
-  return str.replace(/(_\w)/g, m => m[1].toUpperCase());
-}
-
-export function keysToSnake(obj: any): any {
-  if (Array.isArray(obj)) return obj.map(keysToSnake);
-  if (obj && obj.constructor === Object) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [camelToSnake(k), keysToSnake(v)])
-    );
-  }
-  return obj;
+  return str.replace(/([-_][a-z])/ig, ($1) => {
+    return $1.toUpperCase()
+      .replace('-', '')
+      .replace('_', '');
+  });
 }
 
 export function keysToCamel(obj: any): any {
-  if (Array.isArray(obj)) return obj.map(keysToCamel);
-  if (obj && obj.constructor === Object) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [snakeToCamel(k), keysToCamel(v)])
-    );
+  if (Array.isArray(obj)) {
+    return obj.map((i) => keysToCamel(i));
   }
+
+  if (isObject(obj)) {
+    const n: any = {};
+    Object.keys(obj).forEach((k) => {
+      n[snakeToCamel(k)] = keysToCamel(obj[k]);
+    });
+    return n;
+  }
+
   return obj;
 }
-

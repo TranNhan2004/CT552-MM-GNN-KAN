@@ -15,7 +15,7 @@ class ExtractImageFeaturesLayer(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
         
     def forward(self, X: Tensor) -> Tensor:
-        H = self.backbone(X)
+        H = self.backbone_model(X)
         H = self.fc(H)
         return self.dropout(H)
 

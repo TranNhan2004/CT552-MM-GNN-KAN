@@ -17,5 +17,7 @@ export type IconName =
   "chart-bar" |
   "chevron-down" |
   "chevron-up" |
-  "robot";
+  "robot" |
+  "speaker-wave" |
+  "list-bullet";
 

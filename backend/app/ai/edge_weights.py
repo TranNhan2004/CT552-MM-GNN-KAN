@@ -46,9 +46,6 @@ class EdgeWeightsLayerV3(nn.Module):
         Q = Q.view(N, self.num_heads, self.head_dim)
         K = K.view(N, self.num_heads, self.head_dim)
 
-        # Q = F.normalize(Q, dim=-1)   
-        # K = F.normalize(K, dim=-1)
-
         Q = self.dropout(Q)
         K = self.dropout(K)
 
@@ -58,5 +55,4 @@ class EdgeWeightsLayerV3(nn.Module):
 
         # Mean heads 
         H_mean = attn_scores.mean(dim=-1)  # (N, N, H) -> (N, N)
-        # H_mean = self.dropout(H_mean)
         return self.tanh(H_mean / self.temperature)

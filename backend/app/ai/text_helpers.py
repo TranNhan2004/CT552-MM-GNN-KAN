@@ -35,6 +35,8 @@ class TextHelpers:
                     "sentence": sent,
                 })
                 wid += 1
+        
+        return words
     
     @staticmethod
     def compute_origin_embeddings(words: List[Dict[str, Any]], model: SentenceTransformer) -> List[Dict[str, Any]]:
