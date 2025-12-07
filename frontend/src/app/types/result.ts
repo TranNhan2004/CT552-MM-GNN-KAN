@@ -1,3 +1,7 @@
+export interface UploadRes {
+  id: number;
+}
+
 interface Word {
   word: string;
   sentence: string;
@@ -9,8 +13,15 @@ export interface ResultRes {
   processedTexts: Word[];
   imageUrls: string[];
   audioUrls: string[];
-  labelIdx: number;
-  labelName: string;
-  prob: number;
-  weights: number[][];
+  cnnLabelIdx: number;
+  cnnLabelName: string;
+  cnnProb: number;
+  imgTxtLabelIdx: number;
+  imgTxtLabelName: string;
+  imgTxtProb: number;
+  imgTxtWeights: number[][];
+  fullLabelIdx: string;
+  fullLabelName: string;
+  fullProb: number;
+  fullWeights: number[][];
 }

@@ -1,3 +1,4 @@
+from typing import Tuple
 import torch.nn as nn
 import torchvision.models as tvmodels
 
@@ -33,148 +34,68 @@ class ImageHelpers:
         return weights.transforms()
     
     @staticmethod
-    def get_backbone_model(model_name: ImageModelType) -> nn.Module:
-        if model_name == "resnet":
-            return ResNetBackbone()
-        elif model_name == "regnet":
-            return RegNetBackbone()
-        elif model_name == "densenet":
-            return DenseNetBackbone()
-        elif model_name == "mobilenetv3large":
-            return MobileNetBackbone()
-        elif model_name == "mobilenetv3small":
-            return MobileNetSmallBackbone()
-        elif model_name == "shufflenet":
-            return ShuffleNetBackbone()
-        else:
-            raise ValueError(f"Unknown model: {model_name}")
+    def _freeze_backbone(model: nn.Module):
+        for p in model.parameters():
+            p.requires_grad = False
+
+        for m in model.modules():
+            if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+                m.eval()
+                m.train = lambda mode=True: None
+
+    @staticmethod
+    def get_backbone(model_type: ImageModelType, pretrained: bool = True) -> Tuple[nn.Module, int]:
+        if model_type == "resnet":
+            weights = ResNet18_Weights.DEFAULT if pretrained else None
+            model = tvmodels.resnet18(weights=weights)
+            out_features = model.fc.in_features
+            model.fc = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        if model_type == "regnet":
+            weights = RegNet_X_400MF_Weights.DEFAULT if pretrained else None
+            model = tvmodels.regnet_x_400mf(weights=weights)
+            out_features = model.fc.in_features
+            model.fc = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        if model_type == "mobilenetv3large":
+            weights = MobileNet_V3_Large_Weights.DEFAULT if pretrained else None
+            model = tvmodels.mobilenet_v3_large(weights=weights)
+            out_features = model.features[-1].out_channels
+            model.classifier = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        if model_type == "mobilenetv3small":
+            weights = MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
+            model = tvmodels.mobilenet_v3_small(weights=weights)
+            out_features = model.features[-1].out_channels
+            model.classifier = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        if model_type == "densenet":
+            weights = DenseNet121_Weights.DEFAULT if pretrained else None
+            model = tvmodels.densenet121(weights=weights)
+            out_features = model.classifier.in_features
+            model.classifier = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        if model_type == "shufflenet":
+            weights = ShuffleNet_V2_X1_0_Weights.DEFAULT if pretrained else None
+            model = tvmodels.shufflenet_v2_x1_0(weights=weights)
+            out_features = model.fc.in_features
+            model.fc = nn.Identity()
+            ImageHelpers._freeze_backbone(model)
+            return model, out_features
+
+        raise ValueError(f"Unsupported model type: {model_type}")
+
     
 
 
-#=======================================================================================
-class ResNetBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = ResNet18_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.resnet18(weights=weights)
-        self.out_features = self.backbone.fc.in_features
-        self.backbone.fc = nn.Identity()
 
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval() 
-                module.train = lambda mode=True: None
-        
-    def forward(self, X):
-        return self.backbone(X)
-
-
-#=======================================================================================
-class RegNetBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = RegNet_X_400MF_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.regnet_x_400mf(weights=weights)
-        
-        self.out_features = self.backbone.fc.in_features if hasattr(self.backbone, "fc") else 2048
-        self.backbone.fc = nn.Identity()
-
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval() 
-                module.train = lambda mode=True: None
-        
-    def forward(self, X):
-        return self.backbone(X)
-
-
-#=======================================================================================
-class MobileNetBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = MobileNet_V3_Large_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.mobilenet_v3_large(weights=weights)
-        
-        self.out_features = self.backbone.features[-1].out_channels
-        self.backbone.classifier = nn.Identity()
-        
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval() 
-                module.train = lambda mode=True: None
-    
-    def forward(self, X):
-        return self.backbone(X)
-
-
-#=======================================================================================
-class MobileNetSmallBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.mobilenet_v3_small(weights=weights)
-        
-        self.out_features = self.backbone.features[-1].out_channels
-        self.backbone.classifier = nn.Identity()
-        
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval() 
-                module.train = lambda mode=True: None
-    
-    def forward(self, X):
-        return self.backbone(X)
-
-
-#=======================================================================================
-class DenseNetBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = DenseNet121_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.densenet121(weights=weights)
-        self.out_features = self.backbone.classifier.in_features
-        self.backbone.classifier = nn.Identity()
-
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval()
-                module.train = lambda mode=True: None
-
-    def forward(self, X):
-        return self.backbone(X)
-
-
-#=======================================================================================
-class ShuffleNetBackbone(nn.Module):
-    def __init__(self, pretrained: bool = True):
-        super().__init__()
-        weights = ShuffleNet_V2_X1_0_Weights.DEFAULT if pretrained else None
-        self.backbone = tvmodels.shufflenet_v2_x1_0(weights=weights)
-        self.out_features = self.backbone.fc.in_features
-        self.backbone.fc = nn.Identity()
-
-        for param in self.backbone.parameters():
-            param.requires_grad = False
-
-        for module in self.backbone.modules():
-            if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                module.eval()
-                module.train = lambda mode=True: None
-
-    def forward(self, X):
-        return self.backbone(X)

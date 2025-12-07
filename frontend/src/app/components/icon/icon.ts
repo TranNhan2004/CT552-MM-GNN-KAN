@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { IconName } from '../../types/icon';
 
 @Component({
@@ -8,6 +8,6 @@ import { IconName } from '../../types/icon';
   styleUrl: './icon.css'
 })
 export class Icon {
-  @Input({ required: true }) name!: IconName;
-  @Input() className: string = 'w-6 h-6';
+  name = input.required<IconName>();
+  className = input<string>('w-6 h-6');
 }

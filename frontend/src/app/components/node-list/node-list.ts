@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, OnChanges, SimpleChanges, input, output, signal } from '@angular/core';
 import { env } from '../../environments/env.dev';
 import { EdgeThreshold, SelectedNodesData } from '../../types/node-list';
 import { ResultRes } from '../../types/result';
@@ -11,167 +11,194 @@ import { Icon } from "../icon/icon";
   styleUrl: './node-list.css'
 })
 export class NodeList implements OnChanges {
-  @Input() result: ResultRes | null = null;
-  @Output() selectionChanged = new EventEmitter<SelectedNodesData>();
+  result = input<ResultRes | null>(null);
+  missingAudio = input<boolean>(false);
 
-  showModal = false;
-  selectedImageIndices: Set<number> = new Set();
-  selectedTextIndices: Set<number> = new Set();
-  selectedAudioIndices: Set<number> = new Set();
-  selectedThreshold: EdgeThreshold = 80;
+  selectionChanged = output<SelectedNodesData>();
 
-  thresholds: EdgeThreshold[] = [80, 60, 40, 20];
+  showModal = signal(false);
+  selectedImageIndices = signal<Set<number>>(new Set());
+  selectedTextIndices = signal<Set<number>>(new Set());
+  selectedAudioIndices = signal<Set<number>>(new Set());
+  selectedThreshold = signal<EdgeThreshold>(100);
+
+  thresholds: EdgeThreshold[] = [100, 80, 60, 40, 20];
 
   get env() {
     return env;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['result'] && this.result) {
+    if (changes['result'] && this.result()) {
       this.initializeSelection();
     }
   }
 
   private initializeSelection() {
-    if (!this.result) return;
+    if (!this.result()) return;
 
     // Auto-select all nodes initially
-    this.selectedImageIndices.clear();
-    this.selectedTextIndices.clear();
-    this.selectedAudioIndices.clear();
+    this.selectedImageIndices.set(new Set());
+    this.selectedTextIndices.set(new Set());
+    this.selectedAudioIndices.set(new Set());
 
     this.emitSelection();
   }
 
   openModal() {
-    this.showModal = true;
+    this.showModal.set(true);
   }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
   }
 
   toggleImage(index: number) {
-    if (this.selectedImageIndices.has(index)) {
-      this.selectedImageIndices.delete(index);
-    } else {
-      this.selectedImageIndices.add(index);
-    }
+    this.selectedImageIndices.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
     this.emitSelection();
   }
 
   toggleText(index: number) {
-    if (this.selectedTextIndices.has(index)) {
-      this.selectedTextIndices.delete(index);
-    } else {
-      this.selectedTextIndices.add(index);
-    }
+    this.selectedTextIndices.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
     this.emitSelection();
   }
 
   toggleAudio(index: number) {
-    if (this.selectedAudioIndices.has(index)) {
-      this.selectedAudioIndices.delete(index);
-    } else {
-      this.selectedAudioIndices.add(index);
-    }
+    this.selectedAudioIndices.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
     this.emitSelection();
   }
 
   isImageSelected(index: number): boolean {
-    return this.selectedImageIndices.has(index);
+    return this.selectedImageIndices().has(index);
   }
 
   isTextSelected(index: number): boolean {
-    return this.selectedTextIndices.has(index);
+    return this.selectedTextIndices().has(index);
   }
 
   isAudioSelected(index: number): boolean {
-    return this.selectedAudioIndices.has(index);
+    return this.selectedAudioIndices().has(index);
   }
 
   selectAllImages() {
-    if (!this.result) return;
-    (this.result.imageUrls || []).forEach((_, idx) => this.selectedImageIndices.add(idx));
+    if (!this.result()) return;
+    const newSet = new Set<number>();
+    (this.result()!.imageUrls || []).forEach((_, idx) => newSet.add(idx));
+    this.selectedImageIndices.set(newSet);
     this.emitSelection();
   }
 
   deselectAllImages() {
-    this.selectedImageIndices.clear();
+    this.selectedImageIndices.set(new Set());
     this.emitSelection();
   }
 
   selectAllTexts() {
-    if (!this.result) return;
-    (this.result.processedTexts || []).forEach((_, idx) => this.selectedTextIndices.add(idx));
+    if (!this.result()) return;
+    const newSet = new Set<number>();
+    (this.result()!.processedTexts || []).forEach((_, idx) => newSet.add(idx));
+    this.selectedTextIndices.set(newSet);
     this.emitSelection();
   }
 
   deselectAllTexts() {
-    this.selectedTextIndices.clear();
+    this.selectedTextIndices.set(new Set());
     this.emitSelection();
   }
 
   selectAllAudios() {
-    if (!this.result) return;
-    (this.result.audioUrls || []).forEach((_, idx) => this.selectedAudioIndices.add(idx));
+    if (!this.result()) return;
+    const newSet = new Set<number>();
+    (this.result()!.audioUrls || []).forEach((_, idx) => newSet.add(idx));
+    this.selectedAudioIndices.set(newSet);
     this.emitSelection();
   }
 
   deselectAllAudios() {
-    this.selectedAudioIndices.clear();
+    this.selectedAudioIndices.set(new Set());
     this.emitSelection();
   }
 
   selectAll() {
     this.selectAllImages();
     this.selectAllTexts();
-    this.selectAllAudios();
+    if (!this.missingAudio()) {
+      this.selectAllAudios();
+    }
   }
 
   deselectAll() {
-    this.selectedImageIndices.clear();
-    this.selectedTextIndices.clear();
-    this.selectedAudioIndices.clear();
+    this.selectedImageIndices.set(new Set());
+    this.selectedTextIndices.set(new Set());
+    this.selectedAudioIndices.set(new Set());
     this.emitSelection();
   }
 
   setThreshold(threshold: EdgeThreshold) {
-    this.selectedThreshold = threshold;
+    this.selectedThreshold.set(threshold);
     this.emitSelection();
   }
 
   private emitSelection() {
     this.selectionChanged.emit({
-      imageIndices: [...this.selectedImageIndices],
-      textIndices: [...this.selectedTextIndices],
-      audioIndices: [...this.selectedAudioIndices],
-      threshold: this.selectedThreshold
+      imageIndices: [...this.selectedImageIndices()],
+      textIndices: [...this.selectedTextIndices()],
+      audioIndices: [...this.selectedAudioIndices()],
+      threshold: this.selectedThreshold()
     });
   }
 
   getSelectedCount(): number {
-    return this.selectedImageIndices.size +
-           this.selectedTextIndices.size +
-           this.selectedAudioIndices.size;
+    let count = this.selectedImageIndices().size + this.selectedTextIndices().size;
+    if (!this.missingAudio()) {
+      count += this.selectedAudioIndices().size;
+    }
+    return count;
   }
 
   getTotalCount(): number {
-    if (!this.result) return 0;
-    return (this.result.imageUrls?.length || 0) +
-           (this.result.processedTexts?.length || 0) +
-           (this.result.audioUrls?.length || 0);
+    if (!this.result()) return 0;
+    let count = (this.result()!.imageUrls?.length || 0) +
+                (this.result()!.processedTexts?.length || 0);
+    if (!this.missingAudio()) {
+      count += (this.result()!.audioUrls?.length || 0);
+    }
+    return count;
   }
 
   getImageCount(): number {
-    return this.result?.imageUrls?.length || 0;
+    return this.result()?.imageUrls?.length || 0;
   }
 
   getTextCount(): number {
-    return this.result?.processedTexts?.length || 0;
+    return this.result()?.processedTexts?.length || 0;
   }
 
   getAudioCount(): number {
-    return this.result?.audioUrls?.length || 0;
+    return this.result()?.audioUrls?.length || 0;
   }
 }

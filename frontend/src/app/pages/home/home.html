@@ -1,75 +1,11 @@
-<!-- pages/home/home.component.html -->
-<div class="container mx-auto px-4 py-6 w-[95%]">
-  <!-- Graph Display Section -->
+<div class="container mx-auto px-2 py-4 w-full">
   <div class="mb-6">
-    <app-graph-display
-      [result]="result"
-      [selectionData]="selectionData"
-    ></app-graph-display>
+    <app-input-section (dataProcessed)="onDataProcessed($event)" />
   </div>
 
-  <!-- Main Grid: Input & Result -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Left: Input Section -->
-    <div class="bg-white rounded-xl shadow-lg border border-cyan-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-green-300 via-cyan-400 to-blue-500 px-6 py-4">
-        <h2 class="text-xl font-bold text-white">Ô nhập liệu</h2>
-      </div>
-
-      <div class="p-6 space-y-4">
-        <!-- Text Input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Văn bản
-          </label>
-          <textarea [(ngModel)]="text" placeholder="Nhập văn bản của bạn tại đây..." class="w-full h-60 p-4 border-2 border-gray-200 rounded-lg resize-none
-                   focus:ring-2 focus:ring-cyan-400 focus:border-transparent
-                   transition duration-200 text-gray-700 placeholder-gray-400"></textarea>
-        </div>
-
-        <!-- Error Message -->
-        @if (errorMessage) {
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-          <div class="flex items-center">
-            <app-icon name="x-circle" className="w-5 h-5 text-red-500 mr-2" />
-            <p class="text-sm text-red-700 font-medium">{{ errorMessage }}</p>
-          </div>
-        </div>
-        }
-
-        <!-- File Uploader, Node List and Predict Button -->
-        <div class="flex items-center justify-between pt-2 gap-2">
-          <div class="flex items-center gap-2">
-            <app-file-uploader (filesChanged)="onFilesChanged($event)" />
-            <app-node-list [result]="result" (selectionChanged)="onSelectionChanged($event)" />
-          </div>
-
-          <button (click)="onSubmit()" [disabled]="isLoading" class="bg-gradient-to-r from-green-300 to-blue-500 text-white px-8 py-3
-                   rounded-lg font-semibold shadow-md hover:shadow-lg
-                   hover:from-green-500 hover:to-blue-700
-                   transition-all duration-200 transform hover:scale-105
-                   disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-                   flex items-center space-x-2">
-            @if (isLoading) {
-            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-              </path>
-            </svg>
-            <span>Đang xử lý...</span>
-            } @else {
-            <app-icon name="sparkles" className="h-5 w-5" />
-            <span>Dự đoán</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: Result Section -->
-    <div>
-      <app-result-display [result]="result" [isLoading]="isLoading" />
-    </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <app-prediction-column columnType="cnn" [dataId]="uploadedDataId()" />
+    <app-prediction-column columnType="img-txt" [dataId]="uploadedDataId()" />
+    <app-prediction-column columnType="full" [dataId]="uploadedDataId()" />
   </div>
 </div>

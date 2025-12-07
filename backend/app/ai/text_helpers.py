@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 class TextHelpers:
     @staticmethod
     def get_words(text: str) -> List[Dict[str, Any]]:
-        with open("/home/nhan/Workspace/All-Courses/Y4-S1/CT552/Application/backend/ai_models/vietnamese-stopwords.txt", "r") as f:
+        with open("ai_models/vietnamese-stopwords.txt", "r") as f:
             sorted_stopwords = sorted([w.strip() for w in f.read().split("\n")])
         
         sentences = sent_tokenize(text)

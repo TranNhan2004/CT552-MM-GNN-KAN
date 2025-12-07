@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { FileLimit, UploadedFile } from '../../types/file';
 import { Icon } from "../icon/icon";
 
@@ -9,10 +9,10 @@ import { Icon } from "../icon/icon";
   styleUrl: './file-uploader.css'
 })
 export class FileUploader {
-  @Output() filesChanged = new EventEmitter<UploadedFile[]>();
-
-  uploadedFiles: UploadedFile[] = [];
-  showModal: boolean = false;
+  disableAddFiles = input<boolean>(false);
+  filesChanged = output<UploadedFile[]>();
+  uploadedFiles = signal<UploadedFile[]>([]);
+  showModal = signal(false);
 
   fileLimits: Record<UploadedFile['type'], FileLimit> = {
     video: {
@@ -38,11 +38,11 @@ export class FileUploader {
   }
 
   openModal() {
-    this.showModal = true;
+    this.showModal.set(true);
   }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
   }
 
   async onFileSelected(event: Event, type: UploadedFile['type']) {
@@ -50,7 +50,7 @@ export class FileUploader {
     if (!input.files) return;
 
     const files = Array.from(input.files);
-    const existing = this.uploadedFiles.filter(f => f.type === type);
+    const existing = this.uploadedFiles().filter(f => f.type === type);
     const limit = this.fileLimits[type];
     const availableSlots = limit.max - existing.length;
 
@@ -117,26 +117,26 @@ export class FileUploader {
   }
 
   private addFiles(files: File[], type: UploadedFile['type']) {
-    const existing = this.uploadedFiles.filter(f => f.type === type);
+    const existing = this.uploadedFiles().filter(f => f.type === type);
     const newFiles = files.filter(
       file => !existing.some(f => f.file.name === file.name && f.file.size === file.size)
     );
 
-    this.uploadedFiles = [
-      ...this.uploadedFiles,
+    this.uploadedFiles.update(prev => [
+      ...prev,
       ...newFiles.map(file => ({
         id: this.generateId(),
         type,
         file
       }))
-    ];
+    ]);
 
-    this.filesChanged.emit(this.uploadedFiles);
+    this.filesChanged.emit(this.uploadedFiles());
   }
 
   removeFile(id: string) {
-    this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== id);
-    this.filesChanged.emit(this.uploadedFiles);
+    this.uploadedFiles.update(prev => prev.filter(f => f.id !== id));
+    this.filesChanged.emit(this.uploadedFiles());
   }
 
   getTypeLabel(type: UploadedFile['type']): string {
@@ -150,7 +150,7 @@ export class FileUploader {
   }
 
   getFileCount(type: UploadedFile['type']): number {
-    return this.uploadedFiles.filter(f => f.type === type).length;
+    return this.uploadedFiles().filter(f => f.type === type).length;
   }
 
   getFileLimit(type: UploadedFile['type']): FileLimit {
@@ -158,6 +158,6 @@ export class FileUploader {
   }
 
   getTotalFileCount(): number {
-    return this.uploadedFiles.length;
+    return this.uploadedFiles().length;
   }
 }

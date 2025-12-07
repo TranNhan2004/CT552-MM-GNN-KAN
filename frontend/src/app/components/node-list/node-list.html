@@ -1,7 +1,7 @@
 <!-- components/node-list/node-list.component.html -->
 <div>
   <!-- Open Modal Button -->
-  <button (click)="openModal()" [disabled]="!result" class="flex items-center space-x-2 bg-gradient-to-r from-green-300 to-blue-500
+  <button (click)="openModal()" [disabled]="!result()" class="flex items-center space-x-2 bg-gradient-to-r from-green-300 to-blue-500
            text-white px-5 py-3 rounded-lg shadow-md hover:shadow-lg
            hover:from-green-500 hover:to-blue-700
            transition-all duration-200 transform hover:scale-105 font-medium
@@ -16,7 +16,7 @@
   </button>
 
   <!-- Modal -->
-  @if (showModal) {
+  @if (showModal()) {
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" (click)="closeModal()">
     <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col"
       (click)="$event.stopPropagation()">
@@ -45,11 +45,12 @@
           </div>
           <div class="flex space-x-2">
             @for (threshold of thresholds; track threshold) {
-            <button (click)="setThreshold(threshold)" [class.bg-gradient-to-r]="selectedThreshold === threshold"
-              [class.from-green-500]="selectedThreshold === threshold"
-              [class.to-blue-600]="selectedThreshold === threshold" [class.text-white]="selectedThreshold === threshold"
-              [class.bg-gray-200]="selectedThreshold !== threshold"
-              [class.text-gray-700]="selectedThreshold !== threshold"
+            <button (click)="setThreshold(threshold)" [class.bg-gradient-to-r]="selectedThreshold() === threshold"
+              [class.from-green-500]="selectedThreshold() === threshold"
+              [class.to-blue-600]="selectedThreshold() === threshold"
+              [class.text-white]="selectedThreshold() === threshold"
+              [class.bg-gray-200]="selectedThreshold() !== threshold"
+              [class.text-gray-700]="selectedThreshold() !== threshold"
               class="px-4 py-2 rounded-lg font-semibold transition shadow-sm hover:shadow-md">
               {{ threshold }}%
             </button>
@@ -67,7 +68,7 @@
               <app-icon name="photo" className="w-6 h-6 text-green-600" />
               <h3 class="font-bold text-gray-800 text-lg">Ảnh</h3>
               <span class="text-xs bg-white px-2 py-1 rounded-full text-gray-600">
-                {{ selectedImageIndices.size }}/{{ getImageCount() }}
+                {{ selectedImageIndices().size }}/{{ getImageCount() }}
               </span>
             </div>
             <div class="flex space-x-2">
@@ -82,17 +83,19 @@
             </div>
           </div>
 
-          @if (result && result.imageUrls && result.imageUrls.length > 0) {
+          @if (result(); as res) {
+          @if (res.imageUrls && res.imageUrls.length > 0) {
           <div class="grid grid-cols-4 gap-3">
-            @for (url of result.imageUrls; track $index) {
+            @for (url of res.imageUrls; track $index) {
             <div (click)="toggleImage($index)" class="relative cursor-pointer group rounded-lg overflow-hidden border-2 border-gray-200
-                        hover:border-green-400 transition-all duration-200 hover:scale-105">
+                             hover:border-green-400 transition-all duration-200 hover:scale-105">
 
-              <img [src]="`${env.apiUrl}/${url}`" [alt]="'Ảnh ' + ($index + 1)" class="w-full h-32 object-cover z-0 relative" />
+              <img [src]="`${env.apiUrl}/${url}`" [alt]="'Ảnh ' + ($index + 1)"
+                class="w-full h-32 object-cover z-0 relative" />
 
               <!-- Hover overlay -->
               <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10
-                          pointer-events-none transition-all z-10"></div>
+                                  pointer-events-none transition-all z-10"></div>
 
               <!-- Selected checkmark -->
               @if (isImageSelected($index)) {
@@ -103,13 +106,15 @@
 
               <!-- Bottom gradient & label -->
               <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t
-                          from-black/60 to-transparent p-2 pointer-events-none z-20">
+                                  from-black/60 to-transparent p-2 pointer-events-none z-20">
                 <span class="text-white text-xs font-semibold">Ảnh {{ $index + 1 }}</span>
               </div>
-
             </div>
             }
           </div>
+          } @else {
+          <p class="text-gray-400 text-center py-4">Không có ảnh nào</p>
+          }
           } @else {
           <p class="text-gray-400 text-center py-4">Không có ảnh nào</p>
           }
@@ -122,7 +127,7 @@
               <app-icon name="document-text" className="w-6 h-6 text-cyan-600" />
               <h3 class="font-bold text-gray-800 text-lg">Văn bản</h3>
               <span class="text-xs bg-white px-2 py-1 rounded-full text-gray-600">
-                {{ selectedTextIndices.size }}/{{ getTextCount() }}
+                {{ selectedTextIndices().size }}/{{ getTextCount() }}
               </span>
             </div>
             <div class="flex space-x-2">
@@ -137,13 +142,15 @@
             </div>
           </div>
 
-          @if (result && result.processedTexts && result.processedTexts.length > 0) {
+          @if (result(); as res) {
+          @if (res.processedTexts && res.processedTexts.length > 0) {
           <div class="grid grid-cols-3 gap-3">
-            @for (item of result.processedTexts; track $index) {
+            @for (item of res.processedTexts; track $index) {
             <div (click)="toggleText($index)" [class.ring-2]="isTextSelected($index)"
               [class.ring-cyan-500]="isTextSelected($index)" [class.bg-white]="isTextSelected($index)"
               [class.bg-gray-100]="!isTextSelected($index)" [class.opacity-50]="!isTextSelected($index)" class="relative cursor-pointer group p-4 rounded-lg border-2 border-gray-200
-                           hover:border-cyan-400 transition-all duration-200 hover:scale-105" [title]="item.sentence">
+                             hover:border-cyan-400 transition-all duration-200 hover:scale-105"
+              [title]="item.sentence">
               <div class="flex items-center justify-between">
                 <div class="flex-1 min-w-0">
                   <p class="font-bold text-gray-800 truncate">{{ item.word }}</p>
@@ -159,16 +166,20 @@
           } @else {
           <p class="text-gray-400 text-center py-4">Không có văn bản nào</p>
           }
+          } @else {
+          <p class="text-gray-400 text-center py-4">Không có văn bản nào</p>
+          }
         </div>
 
-        <!-- Audio Section -->
+        <!-- Audio Section (Hidden when missingAudio is true) -->
+        @if (!missingAudio()) {
         <div class="border-2 border-blue-200 rounded-xl p-5 bg-gradient-to-br from-green-50 to-blue-100">
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center space-x-2">
               <app-icon name="music" className="w-6 h-6 text-blue-600" />
               <h3 class="font-bold text-gray-800 text-lg">Âm thanh</h3>
               <span class="text-xs bg-white px-2 py-1 rounded-full text-gray-600">
-                {{ selectedAudioIndices.size }}/{{ getAudioCount() }}
+                {{ selectedAudioIndices().size }}/{{ getAudioCount() }}
               </span>
             </div>
             <div class="flex space-x-2">
@@ -183,20 +194,22 @@
             </div>
           </div>
 
-          @if (result && result.audioUrls && result.audioUrls.length > 0) {
+          @if (result(); as res) {
+          @if (res.audioUrls && res.audioUrls.length > 0) {
           <div class="grid grid-cols-2 gap-3">
-            @for (url of result.audioUrls; track $index) {
+            @for (url of res.audioUrls; track $index) {
             <div (click)="toggleAudio($index)" [class.ring-2]="isAudioSelected($index)"
               [class.ring-blue-500]="isAudioSelected($index)" [class.bg-white]="isAudioSelected($index)"
               [class.bg-gray-100]="!isAudioSelected($index)" [class.opacity-50]="!isAudioSelected($index)" class="relative cursor-pointer group p-4 rounded-lg border-2 border-gray-200
-                           hover:border-blue-400 transition-all duration-200">
+                               hover:border-blue-400 transition-all duration-200">
               <div class="flex items-center space-x-3">
                 <div class="flex-shrink-0 bg-blue-500 rounded-full p-3">
                   <app-icon name="speaker-wave" className="w-6 h-6 text-white" />
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-gray-800">Audio {{ $index + 1 }}</p>
-                  <audio [src]="url" controls class="w-full mt-2" (click)="$event.stopPropagation()"></audio>
+                  <audio [src]="`${env.apiUrl}/${url}`" controls class="w-full mt-2"
+                    (click)="$event.stopPropagation()"></audio>
                 </div>
                 @if (isAudioSelected($index)) {
                 <app-icon name="check-circle" className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -208,7 +221,11 @@
           } @else {
           <p class="text-gray-400 text-center py-4">Không có âm thanh nào</p>
           }
+          } @else {
+          <p class="text-gray-400 text-center py-4">Không có âm thanh nào</p>
+          }
         </div>
+        }
       </div>
 
       <!-- Modal Footer -->

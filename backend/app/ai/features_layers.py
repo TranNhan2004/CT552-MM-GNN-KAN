@@ -10,12 +10,12 @@ from ..models.image import ImageModelType
 class ExtractImageFeaturesLayer(nn.Module):
     def __init__(self, image_model_name: ImageModelType, in_channels: int, out_dim: int, dropout_rate: float = 0.2):
         super().__init__()
-        self.backbone_model = ImageHelpers.get_backbone_model(image_model_name)
-        self.fc = nn.Linear(self.backbone_model.out_features, out_dim)
+        self.backbone, self.out_features = ImageHelpers.get_backbone(image_model_name)
+        self.fc = nn.Linear(self.out_features, out_dim)
         self.dropout = nn.Dropout(dropout_rate)
         
     def forward(self, X: Tensor) -> Tensor:
-        H = self.backbone_model(X)
+        H = self.backbone(X)
         H = self.fc(H)
         return self.dropout(H)
 

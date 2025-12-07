@@ -1,0 +1,121 @@
+<div class="bg-white rounded-xl shadow-lg border border-cyan-100 overflow-hidden">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-green-300 via-cyan-400 to-blue-500 px-6 py-4">
+    <h2 class="text-xl font-bold text-white">{{ getTitle() }}</h2>
+  </div>
+
+  <div class="p-6 space-y-4">
+    <div class="flex items-center justify-between space-x-2">
+      <div class="flex items-center space-x-2">
+        <select [(ngModel)]="selectedModel" class="w-full p-3 border-2 border-gray-200 rounded-lg
+                         focus:ring-2 focus:ring-cyan-400 focus:border-transparent
+                         transition duration-200" [disabled]="isLoading()">
+          <option value="resnet">ResNet</option>
+          <option value="regnet">RegNet</option>
+          <option value="mobilenetv3small">MobileNet V3 Small</option>
+          <option value="mobilenetv3large">MobileNet V3 Large</option>
+          <option value="densenet">DenseNet</option>
+          <option value="shufflenet">ShuffleNet</option>
+        </select>
+      </div>
+
+      <!-- Predict Button -->
+      <button (click)="onPredict()" [disabled]="!dataId() || isLoading()" class="w-[40%] bg-gradient-to-r from-green-300 to-blue-500 text-white px-6 py-3
+                       rounded-lg font-semibold shadow-md hover:shadow-lg
+                       hover:from-green-500 hover:to-blue-700
+                       transition-all duration-200 transform hover:scale-105
+                       disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                       flex items-center justify-center space-x-2">
+        @if (isLoading()) {
+        <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        <span>Đang xử lý...</span>
+        } @else {
+        <app-icon name="sparkles" className="h-5 w-5" />
+        <span>Dự đoán</span>
+        }
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+      <div class="flex items-center">
+        <app-icon name="x-circle" className="w-5 h-5 text-red-500 mr-2" />
+        <p class="text-sm text-red-700 font-medium">{{ errorMessage() }}</p>
+      </div>
+    </div>
+    }
+
+    <!-- Result Display -->
+    <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-5 border-2 border-cyan-200 min-h-[200px]">
+      @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="relative">
+          <div class="w-16 h-16 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin"></div>
+        </div>
+        <p class="mt-4 text-gray-600 font-medium animate-pulse">Đang xử lý...</p>
+      </div>
+      } @else if (predictionResult()) {
+      <div class="space-y-4">
+        <!-- Label -->
+        <div>
+          <div class="font-medium text-gray-600 mb-2 flex items-center">
+            <app-icon name="check-circle" className="w-5 h-5 mr-2 text-green-500" />
+            <span>Nhãn dự đoán</span>
+          </div>
+          <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            {{ predictionResult()!.labelName }}
+          </div>
+        </div>
+
+        <!-- Confidence -->
+        <div>
+          <div class="font-medium text-gray-600 mb-2 flex items-center">
+            <app-icon name="chart-bar" className="w-5 h-5 mr-2 text-cyan-500" />
+            <span>Độ tin cậy</span>
+          </div>
+
+          <div [class]="getConfidenceBackground(predictionResult()!.prob)"
+            class="px-4 py-2 rounded-lg border-2 shadow-sm inline-block">
+            <span [class]="getConfidenceColor(predictionResult()!.prob)" class="text-2xl font-bold">
+              {{ (predictionResult()!.prob * 100).toFixed(2) }}%
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner mt-3">
+            <div [class]="getProgressBarColor(predictionResult()!.prob)"
+              class="h-3 rounded-full transition-all duration-1000 ease-out"
+              [style.width.%]="predictionResult()!.prob * 100"></div>
+          </div>
+        </div>
+      </div>
+      } @else {
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="bg-gradient-to-br from-green-100 to-blue-100 rounded-full p-4 mb-3">
+          <app-icon name="document-text" className="w-12 h-12 text-cyan-500" />
+        </div>
+        <p class="text-gray-400 text-center">Chưa có kết quả</p>
+        <p class="text-gray-400 text-center text-sm mt-1">Nhấn "Dự đoán" để bắt đầu</p>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Graph Section (only for img-txt and full) -->
+@if (showGraph() && result()) {
+<div class="mt-6">
+  <app-graph-display
+    [result]="result()!"
+    [selectionData]="selectionData()"
+    [columnType]="columnType()"
+    (selectionChanged)="onSelectionChanged($event)"
+  ></app-graph-display>
+</div>
+}

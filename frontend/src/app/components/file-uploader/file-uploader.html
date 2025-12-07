@@ -1,10 +1,12 @@
 <!-- components/file-uploader/file-uploader.component.html -->
 <div>
   <!-- Add Files Button -->
-  <button (click)="openModal()" class="flex items-center space-x-2 bg-gradient-to-r from-green-300 to-blue-500
+  <button (click)="openModal()" [disabled]="disableAddFiles()"
+    class="flex items-center space-x-2 bg-gradient-to-r from-green-300 to-blue-500
            text-white px-5 py-3 rounded-lg shadow-md hover:shadow-lg
            hover:from-green-500 hover:to-blue-700
-           transition-all duration-200 transform hover:scale-105 font-medium">
+           transition-all duration-200 transform hover:scale-105 font-medium
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
     <app-icon name="plus" className="w-5 h-5"></app-icon>
     <span class="font-bold">Thêm tệp</span>
     @if (getTotalFileCount() > 0) {
@@ -15,7 +17,7 @@
   </button>
 
   <!-- Modal -->
-  @if (showModal) {
+  @if (showModal()) {
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" (click)="closeModal()">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col"
       (click)="$event.stopPropagation()">
@@ -33,13 +35,15 @@
 
       <!-- Modal Body -->
       <div class="p-6 space-y-6 overflow-auto">
+        <div class="text-red-600 font-semibold">(* Phải tải lên ít nhất 1 video hoặc tối thiểu 3 hình ảnh)</div>
+
         <!-- Video Section -->
         <div class="border-2 border-blue-200 rounded-xl p-5 bg-gradient-to-br from-green-50 to-blue-100">
           <div class="flex justify-between items-center mb-3">
             <div class="flex items-center space-x-2">
               <app-icon name="video-camera" className="w-6 h-6"></app-icon>
               <h3 class="font-bold text-gray-800 text-lg">Video</h3>
-              <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">Tùy chọn (30s-2 phút)</span>
+              <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">(30s-2 phút)</span>
             </div>
             <span class="text-sm font-semibold" [class.text-gray-600]="getFileCount('video') === 0"
               [class.text-blue-600]="getFileCount('video') > 0">
@@ -57,7 +61,7 @@
 
           @if (getFileCount('video') > 0) {
           <div class="mt-3 space-y-2">
-            @for (file of uploadedFiles; track file.id) {
+            @for (file of uploadedFiles(); track file.id) {
             @if (file.type === 'video') {
             <div class="flex items-center justify-between bg-white border border-blue-200 p-3 rounded-lg shadow-sm">
               <span class="text-sm text-gray-700 font-medium truncate flex-1">{{ file.file.name }}</span>
@@ -78,11 +82,8 @@
             <div class="flex items-center space-x-2">
               <app-icon name="photo" className="w-6 h-6"></app-icon>
               <h3 class="font-bold text-gray-800 text-lg">Hình ảnh</h3>
-              <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">* Bắt buộc
-                (3-20)</span>
             </div>
-            <span class="text-sm font-semibold" [class.text-red-600]="getFileCount('image') < 3"
-              [class.text-green-600]="getFileCount('image') >= 3">
+            <span class="text-sm font-semibold text-gray-600">
               {{ getFileCount('image') }}/{{ getFileLimit('image').max }}
             </span>
           </div>
@@ -98,7 +99,7 @@
 
           @if (getFileCount('image') > 0) {
           <div class="mt-3 grid grid-cols-2 gap-2">
-            @for (file of uploadedFiles; track file.id) {
+            @for (file of uploadedFiles(); track file.id) {
             @if (file.type === 'image') {
             <div class="flex items-center justify-between bg-white border border-green-200 p-2 rounded-lg shadow-sm">
               <span class="text-sm text-gray-700 truncate flex-1 mr-2">{{ file.file.name }}</span>
@@ -136,7 +137,7 @@
 
           @if (getFileCount('text') > 0) {
           <div class="mt-3 space-y-2">
-            @for (file of uploadedFiles; track file.id) {
+            @for (file of uploadedFiles(); track file.id) {
             @if (file.type === 'text') {
             <div class="flex items-center justify-between bg-white border border-cyan-200 p-3 rounded-lg shadow-sm">
               <span class="text-sm text-gray-700 font-medium truncate flex-1">{{ file.file.name }}</span>
@@ -175,7 +176,7 @@
 
           @if (getFileCount('audio') > 0) {
           <div class="mt-3 space-y-2">
-            @for (file of uploadedFiles; track file.id) {
+            @for (file of uploadedFiles(); track file.id) {
             @if (file.type === 'audio') {
             <div class="flex items-center justify-between bg-white border border-emerald-200 p-3 rounded-lg shadow-sm">
               <span class="text-sm text-gray-700 font-medium truncate flex-1">{{ file.file.name }}</span>

@@ -1,42 +1,8 @@
 <nav
-  class="flex items-center justify-between bg-gradient-to-r from-green-400 via-cyan-500 to-blue-600 text-white px-6 py-3 shadow-lg">
-  <!-- Left: Icon + Brand Name -->
+  class="flex items-center justify-between bg-gradient-to-r from-green-400 via-cyan-500 to-blue-600 text-white px-6 py-4 shadow-lg">
   <div class="flex items-center space-x-3">
     <app-icon name="robot" className="w-8 h-8 text-blue-300"></app-icon>
-    <span class="font-bold text-2xl drop-shadow-md">Cipher</span>
+    <span class="font-bold text-2xl drop-shadow-md">ICH Predictor</span>
   </div>
-
-  <!-- Right: Model Selector -->
-  <div class="relative">
-    <button (click)="toggleDropdown()" class="flex items-center space-x-2 bg-white bg-opacity-20 hover:bg-opacity-30
-             backdrop-blur-sm text-gray-500 px-4 py-2 rounded-lg transition-all duration-200
-             shadow-md border border-white border-opacity-30 font-medium">
-      <span class="font-medium">{{ getSelectedModelLabel() }}</span>
-      <app-icon name="chevron-down"
-        [className]="dropdownOpen ? 'w-5 h-5 rotate-180 transition-transform duration-200' : 'w-5 h-5 transition-transform duration-200'" />
-    </button>
-
-    <!-- Dropdown Menu -->
-    @if (dropdownOpen) {
-    <div
-      class="absolute right-0 mt-2 w-56 bg-white text-gray-500 rounded-lg shadow-xl z-50 border border-gray-200 overflow-hidden">
-      <ul class="py-1">
-        @for (modelLabel of modelLabels; track modelLabel) {
-        <li class="px-4 py-2 hover:bg-gradient-to-r hover:from-green-50 hover:to-blue-50 cursor-pointer transition"
-          [class.bg-gradient-to-r]="models[modelLabel] === selectedModel"
-          [class.from-green-100]="models[modelLabel] === selectedModel"
-          [class.to-blue-100]="models[modelLabel] === selectedModel"
-          [class.font-semibold]="models[modelLabel] === selectedModel">
-          <button (click)="selectModel(modelLabel)" class="w-full text-left flex items-center justify-between">
-            <span>{{ modelLabel }}</span>
-            @if (models[modelLabel] === selectedModel) {
-            <app-icon name="check-circle" className="w-5 h-5 text-cyan-600" />
-            }
-          </button>
-        </li>
-        }
-      </ul>
-    </div>
-    }
-  </div>
+  <div></div>
 </nav>
