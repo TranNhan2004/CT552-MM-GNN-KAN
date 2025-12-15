@@ -6,21 +6,11 @@
 
   <div class="p-6 space-y-4">
     <div class="flex items-center justify-between space-x-2">
-      <!-- <div class="flex items-center space-x-2">
-        <select [(ngModel)]="selectedModel" class="w-full p-3 border-2 border-gray-200 rounded-lg
-                         focus:ring-2 focus:ring-cyan-400 focus:border-transparent
-                         transition duration-200" [disabled]="isLoading()">
-          @for (opt of selectModelOptions(); track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-      </div> -->
-
       <div class="relative text-sm" (clickOutside)="openDropdown.set(false)">
-        <button (click)="openDropdown.set(true)" class="w-72 p-3 border-2 border-gray-200 rounded-lg bg-white
+        <button (click)="openDropdown.set(true)" class="w-[300px] p-3 border-2 border-gray-200 rounded-lg bg-white
                  flex justify-between items-center
                  focus:ring-2 focus:ring-cyan-400 transition">
-          <span class="text-[12px]">{{ selectedModelObj()?.label }}</span>
+          <span>{{ selectedModelObj()?.label }}</span>
           <app-icon name="chevron-down" className="w-4 h-4 ml-2"></app-icon>
         </button>
 

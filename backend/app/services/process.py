@@ -83,7 +83,7 @@ class ProcessService:
                 out_feats_dim=448,
                 out_shared_dim=512,
                 num_classes=8,
-                classifier="fastkan"
+                classifier="mlp"
             ),
             "mobilenetv3small": PipelineImageText(
                 image_model_name="mobilenetv3small",
@@ -110,7 +110,7 @@ class ProcessService:
         self.pipeline_image_text_model_paths: Dict[ImageModelType, str] = {
             "resnet": "ai_models/pipeline_img_txt/fixed_multimodal_v3_resnet_fastkan_2025-12-06_10-32-26/best_model.pt",
             "regnet": "ai_models/pipeline_img_txt/fixed_multimodal_v3_regnet_mlp_2025-12-06_17-29-32/best_model.pt",
-            "mobilenetv3large": "ai_models/pipeline_img_txt/fixed_multimodal_v3_mobilenetv3large_fastkan_2025-12-05_20-41-18/best_model.pt",
+            "mobilenetv3large": "ai_models/pipeline_img_txt/fixed_multimodal_v3_mobilenetv3large_mlp_2025-12-05_22-23-29/best_model.pt",
             "mobilenetv3small": "ai_models/pipeline_img_txt/fixed_multimodal_v3_mobilenetv3small_mlp_2025-12-05_23-21-59/best_model.pt",
             "densenet": "ai_models/pipeline_img_txt/fixed_multimodal_v3_densenet_fastkan_2025-12-06_20-24-49/best_model.pt",
             "shufflenet": "ai_models/pipeline_img_txt/fixed_multimodal_v3_shufflenet_fastkan_2025-12-06_00-51-23/best_model.pt",    

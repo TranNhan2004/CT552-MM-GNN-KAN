@@ -30,7 +30,7 @@ class PreprocessService:
         return images_subgraph
             
     def preprocess_texts(self, words: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        return TextHelpers.compute_origin_embeddings(words, self.embedding_model)
+        return [] if words == [] else TextHelpers.compute_origin_embeddings(words, self.embedding_model)
 
     def preprocess_audios(self, audio_urls: List[str]) -> ndarray:
         audios_subgraph = []
@@ -41,6 +41,6 @@ class PreprocessService:
             except Exception as e:
                 raise ValueError(f"Không thể load âm thanh {aud_path}: {e}")
 
-        return AudioHelpers.pad_to_max_shape(audios_subgraph)
+        return [] if audios_subgraph == [] else AudioHelpers.pad_to_max_shape(audios_subgraph)
 
 

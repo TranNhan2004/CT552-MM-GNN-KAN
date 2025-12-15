@@ -59,6 +59,13 @@ export class PredictionColumn implements OnInit{
     }
   });
 
+  notUseAudioLabels = new Set<string>([
+    'Chợ nổi Cái Răng',
+    'Đua bò Bảy Núi',
+    'Nghề đan tre',
+    'Nghề dệt chiếu'
+  ]);
+
   constructor(private aiService: AIService) {}
 
   ngOnInit(): void {
@@ -120,6 +127,10 @@ export class PredictionColumn implements OnInit{
 
     request.subscribe({
       next: (result) => {
+        if (this.notUseAudioLabels.has(result.fullLabelName)) {
+          result.audioUrls = [];
+        }
+
         this.result.set(result);
         this.isLoading.set(false);
       },

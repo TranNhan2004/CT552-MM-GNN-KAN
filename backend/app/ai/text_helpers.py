@@ -8,6 +8,9 @@ from sentence_transformers import SentenceTransformer
 class TextHelpers:
     @staticmethod
     def get_words(text: str) -> List[Dict[str, Any]]:
+        if text.strip() == "":
+            return []
+
         with open("ai_models/vietnamese-stopwords.txt", "r") as f:
             sorted_stopwords = sorted([w.strip() for w in f.read().split("\n")])
         

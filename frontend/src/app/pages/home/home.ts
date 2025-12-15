@@ -14,16 +14,16 @@ export class Home {
   imageSelectModelOptions: SelectModelOptions[] = [
     { label: "ResNet18", value: "resnet", best: false, },
     { label: "RegNetX400MF", value: "regnet", best: false },
-    { label: "MobileNetV3 Large", value: "mobilenetv3large", best: false },
+    { label: "MobileNetV3 Large", value: "mobilenetv3large", best: true },
     { label: "MobileNetV3 Small", value: "mobilenetv3small", best: false },
-    { label: "DenseNet121", value: "densenet", best: true },
+    { label: "DenseNet121", value: "densenet", best: false },
     { label: "ShuffleNetV2 x1.0", value: "shufflenet", best: false }
   ];
 
   imageTextSelectModelOptions: SelectModelOptions[] = [
     { label: "ResNet18 + MGAT + FastKAN", value: "resnet", best: false, },
     { label: "RegNetX400MF + MGAT + MLP", value: "regnet", best: false },
-    { label: "MobileNetV3 Large + MGAT + FastKAN", value: "mobilenetv3large", best: true },
+    { label: "MobileNetV3 Large + MGAT + MLP", value: "mobilenetv3large", best: true },
     { label: "MobileNetV3 Small + MGAT + MLP", value: "mobilenetv3small", best: false },
     { label: "DenseNet121 + MGAT + FastKAN", value: "densenet", best: false },
     { label: "ShuffleNetV2 x1.0 + MGAT + FastKAN", value: "shufflenet", best: false }

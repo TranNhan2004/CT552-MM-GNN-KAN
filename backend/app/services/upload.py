@@ -146,7 +146,7 @@ class UploadService:
             for f in files
         )
         if not has_image:
-            raise ValueError("Phải có ít nhất một file ảnh (.png, .jpg, .jpeg) hoặc video")
+            raise ValueError("Phải có file ảnh (.png, .jpg, .jpeg) hoặc video")
 
     def _safe_save_path(self, file_path: Path) -> Path:
         timestamp = int(time.time() * 1000)  
