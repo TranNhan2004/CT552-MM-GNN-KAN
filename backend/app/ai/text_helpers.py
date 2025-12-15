@@ -27,14 +27,15 @@ class TextHelpers:
                 if pos_check < len(sorted_stopwords) and sorted_stopwords[pos_check] == w.lower():
                     continue
                 
-                words.append({
-                    "wid": wid,
-                    "word": w,
-                    "pos": pos_tag_val, 
-                    "sent_id": sid,
-                    "sentence": sent,
-                })
-                wid += 1
+                if pos_tag_val in TAG:
+                    words.append({
+                        "wid": wid,
+                        "word": w,
+                        "pos": pos_tag_val, 
+                        "sent_id": sid,
+                        "sentence": sent,
+                    })
+                    wid += 1
         
         return words
     

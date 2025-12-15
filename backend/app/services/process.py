@@ -5,7 +5,7 @@ from numpy import ndarray
 from torch import Tensor
 from typing import Any, Dict, List, Literal
 from ..models.image import ImageModelType
-from ..ai.pipeline import PipelineFull, PipelineImage, PipelineImageText, PipelineV3
+from ..ai.pipeline import PipelineFull, PipelineImage, PipelineImageText
 
 class ProcessService:
     def __init__(self):
@@ -76,7 +76,7 @@ class ProcessService:
                 out_feats_dim=448,
                 out_shared_dim=512,
                 num_classes=8,
-                classifier="fastkan"
+                classifier="mlp"
             ),
             "mobilenetv3large": PipelineImageText(
                 image_model_name="mobilenetv3large",
@@ -90,7 +90,7 @@ class ProcessService:
                 out_feats_dim=448,
                 out_shared_dim=512,
                 num_classes=8,
-                classifier="fastkan"
+                classifier="mlp"
             ),
             "densenet": PipelineImageText(
                 image_model_name="densenet",
@@ -164,7 +164,7 @@ class ProcessService:
         
         for (k, path_full), (_, path_image_text), (_, path_image) in zip(
             self.pipeline_full_model_paths.items(), 
-            self.pipeline_image_model_paths.items(),
+            self.pipeline_image_text_model_paths.items(),
             self.pipeline_image_model_paths.items()
         ):
             self.pipeline_full_models[k].load(path_full)

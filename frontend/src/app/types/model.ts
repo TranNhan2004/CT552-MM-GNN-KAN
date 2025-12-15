@@ -11,3 +11,9 @@ export interface ModelInfo {
   displayName: string;
   description?: string;
 }
+
+export interface SelectModelOptions {
+  value: ModelType;
+  label: string;
+  best: boolean;
+}

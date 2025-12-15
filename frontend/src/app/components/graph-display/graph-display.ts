@@ -15,7 +15,7 @@ import {
 import cytoscape, { Core, NodeSingular } from 'cytoscape';
 import { env } from '../../environments/env.dev';
 import { SelectedNodesData } from '../../types/node-list';
-import { ResultRes } from '../../types/result';
+import { PredictionType, ResultRes } from '../../types/result';
 import { NodeList } from '../node-list/node-list';
 
 type ColumnType = 'cnn' | 'img-txt' | 'full';
@@ -30,7 +30,7 @@ type ColumnType = 'cnn' | 'img-txt' | 'full';
 export class GraphDisplay implements AfterViewInit, OnDestroy {
   result = input<ResultRes | null>(null);
   selectionData = input<SelectedNodesData | null>(null);
-  columnType = input.required<ColumnType>();
+  predictionType = input.required<PredictionType>();
 
   selectionChanged = output<SelectedNodesData>();
 
@@ -49,12 +49,12 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
     sentence: ''
   });
 
-  missingAudio = computed(() => this.columnType() === 'img-txt');
+  missingAudio = computed(() => this.predictionType() === 'img-txt');
   weights = computed(() => {
     const res = this.result();
     if (!res) return null;
 
-    const type = this.columnType();
+    const type = this.predictionType();
     if (type === 'img-txt') return res.imgTxtWeights;
     if (type === 'full') return res.fullWeights;
     return null;
@@ -173,13 +173,14 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
       {
         selector: 'edge',
         style: {
-          'width': 'data(weight)',
+          'width': '1px',
           'line-color': '#94a3b8',
           'opacity': 0.8,
           'curve-style': 'bezier',
           'label': 'data(label)',
           'font-size': 10,
-          'color': '#334155',
+          'font-weight': 'normal',
+          'color': 'data(color)',
           'text-background-color': '#ffffff',
           'text-background-opacity': 0.8,
           'text-rotation': 'autorotate'
@@ -307,10 +308,12 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
   // -------------------------------------------------
   private buildElements(result: ResultRes, sel: SelectedNodesData) {
     const out: any[] = [];
-    let idx = 0;
     const skipAudio = this.missingAudio();
 
-    // IMAGES
+    const imageOffset = 0;
+    const textOffset = result.imageUrls?.length || 0;
+    const audioOffset = textOffset + (result.processedTexts?.length || 0);
+
     sel.imageIndices.forEach(i => {
       if (result.imageUrls?.[i]) {
         out.push({
@@ -318,7 +321,7 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
             id: `img-${i}`,
             type: 'image',
             imageUrl: `${env.apiUrl}/${result.imageUrls[i]}`,
-            matrixIndex: idx++
+            matrixIndex: imageOffset + i
           }
         });
       }
@@ -337,13 +340,13 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
             word: item.word,
             sentence: item.sentence,
             label: display,
-            matrixIndex: idx++
+            matrixIndex: textOffset + i
           }
         });
       }
     });
 
-    // AUDIO (skip if img-txt mode)
+    // AUDIO
     if (!skipAudio) {
       sel.audioIndices.forEach(i => {
         if (result.audioUrls?.[i]) {
@@ -352,7 +355,7 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
               id: `audio-${i}`,
               type: 'audio',
               audioUrl: `${env.apiUrl}/${result.audioUrls[i]}`,
-              matrixIndex: idx++
+              matrixIndex: audioOffset + i
             }
           });
         }
@@ -362,10 +365,18 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
     return out;
   }
 
-  private calculateEdges(nodes: any[], weights: number[][], sel: SelectedNodesData) {
-    if (!weights) return [];
-
-    const all: any[] = [];
+  private calculateEdges(
+    nodes: any[],
+    weights: number[][],
+    sel: SelectedNodesData
+  ) {
+    const edges: {
+      source: string;
+      target: string;
+      color: string;
+      weight: number;
+      normalizedWeight: number;
+    }[] = [];
 
     for (let a = 0; a < nodes.length; a++) {
       for (let b = a + 1; b < nodes.length; b++) {
@@ -374,29 +385,54 @@ export class GraphDisplay implements AfterViewInit, OnDestroy {
 
         if (ai < weights.length && bi < weights[ai].length) {
           const w = weights[ai][bi];
-          if (w > 0) {
-            all.push({
-              source: nodes[a].data.id,
-              target: nodes[b].data.id,
-              weight: Number(w.toFixed(4))
-            });
-          }
+          const normalized = (w + 1) / 2;
+
+          edges.push({
+            source: nodes[a].data.id,
+            target: nodes[b].data.id,
+            color: w <= 0 ? "#DC2626" : "#15803D",
+            weight: w,
+            normalizedWeight: normalized
+          });
         }
       }
     }
 
-    all.sort((a, b) => b.weight - a.weight);
-    const keep = Math.ceil(all.length * (sel.threshold / 100));
-    const selected = all.slice(0, keep);
+    console.log('Calculating edges with threshold:', edges);
 
-    return selected.map((e, i) => ({
-      data: {
-        id: `edge-${i}`,
-        source: e.source,
-        target: e.target,
-        weight: Math.max(1, Math.min(e.weight * 5, 10)),
-        label: e.weight.toString()
-      }
-    }));
+    const finalEdges =
+      sel.threshold === 100
+        ? edges
+        : (() => {
+            const sorted = [...edges].sort(
+              (a, b) => b.weight - a.weight
+            );
+
+            const keepCount = Math.max(
+              1,
+              Math.floor(sorted.length * sel.threshold / 100)
+            );
+
+            return sorted.slice(0, keepCount);
+          })();
+
+    const minWidth = 1;
+    const maxWidth = 10;
+
+    return finalEdges.map(e => {
+      const width = minWidth + (e.normalizedWeight * (maxWidth - minWidth));
+
+      return {
+        data: {
+          id: `edge-${e.source}-${e.target}`,
+          source: e.source,
+          color: e.color,
+          target: e.target,
+          weight: e.weight,
+          label: e.weight.toFixed(4) // Display original weight
+        }
+      };
+    });
   }
+
 }

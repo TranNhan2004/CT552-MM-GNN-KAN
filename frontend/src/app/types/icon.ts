@@ -19,5 +19,6 @@ export type IconName =
   "chevron-up" |
   "robot" |
   "speaker-wave" |
-  "list-bullet";
+  "list-bullet" |
+  "arrow-path";
 

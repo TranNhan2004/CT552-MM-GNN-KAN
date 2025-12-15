@@ -19,7 +19,7 @@ export class InputSection {
   isCompleted = signal<boolean>(false);
   errorMessage = signal<string>('');
   successMessage = signal<string>('');
-
+  refreshFn = output<void>();
   dataProcessed = output<number>();
 
   constructor(private aiService: AIService) {}

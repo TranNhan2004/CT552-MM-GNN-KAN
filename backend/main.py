@@ -61,9 +61,9 @@ async def upload(
             audio_urls=audio_urls,
             text=full_text,
             processed_texts=words,
-            cnn_label_idx=None,
-            cnn_label_name=None,
-            cnn_prob=None,
+            img_label_idx=None,
+            img_label_name=None,
+            img_prob=None,
             img_txt_label_idx=None,
             img_txt_label_name=None,
             img_txt_prob=None,
@@ -143,18 +143,14 @@ async def predict_full(req: PredictReq):
         audios_subgraph = preprocess_service.preprocess_audios(result_model.audio_urls)
         
         img_txt_graph = process_service.build_graph(images_subgraph, texts_subgraph, [])
-        coarse_pred = process_service.predict(img_txt_graph, predict_type="full", image_model_name=req.model)
+        coarse_pred_1 = process_service.predict(img_txt_graph, predict_type="image_text", image_model_name=req.model)
+        coarse_pred_2 = process_service.predict(img_txt_graph, predict_type="full", image_model_name=req.model)
 
-        upload_dir = f"uploads/{result_model.id}"
-
-        if coarse_pred["label_name"] in NOT_USE_AUDIO: 
-            upload_service.clean_audio(upload_dir)
-            result_model.audio_urls = []
-            audios_subgraph = []
-            pred = coarse_pred
+        if coarse_pred_1["label_name"] in NOT_USE_AUDIO and coarse_pred_2["label_name"] in NOT_USE_AUDIO: 
+            pred = coarse_pred_2 if coarse_pred_2["prob"] >= coarse_pred_1["prob"] else coarse_pred_1
         else:
             graph = process_service.build_graph(images_subgraph, texts_subgraph, audios_subgraph)
-            pred = process_service.predict(graph, req.model)
+            pred = process_service.predict(graph, predict_type="full", image_model_name=req.model)
         
         result_model.full_label_idx = pred["label_idx"]
         result_model.full_label_name = pred["label_name"]

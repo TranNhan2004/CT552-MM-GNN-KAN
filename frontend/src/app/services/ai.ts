@@ -33,10 +33,10 @@ export class AIService {
 
   predictCNN(dataId: number, model: ModelType) {
     return this.httpClient.post<ResultRes>(
-      `${env.apiUrl}/api/predict/cnn`,
+      `${env.apiUrl}/api/predict/img`,
       { id: dataId, model }
     ).pipe(
-      map((res: any) => keysToCamel(JSON.parse(res)) as ResultRes)
+      map((res: any) => keysToCamel(res) as ResultRes)
     );
   }
 
@@ -45,7 +45,7 @@ export class AIService {
       `${env.apiUrl}/api/predict/img-txt`,
       { id: dataId, model }
     ).pipe(
-      map((res: any) => keysToCamel(JSON.parse(res)) as ResultRes)
+      map((res: any) => keysToCamel(res) as ResultRes)
     );
   }
 
@@ -54,14 +54,14 @@ export class AIService {
       `${env.apiUrl}/api/predict/full`,
       { id: dataId, model }
     ).pipe(
-      map((res: any) => keysToCamel(JSON.parse(res)) as ResultRes)
+      map((res: any) => keysToCamel(res) as ResultRes)
     );
   }
 
   get(id: number) {
     return this.httpClient.get(`${env.apiUrl}/api/results/${id}`).pipe(
       map((res: any) => {
-        return keysToCamel(JSON.parse(res)) as ResultRes;
+        return keysToCamel(res) as ResultRes;
       })
     );
   }

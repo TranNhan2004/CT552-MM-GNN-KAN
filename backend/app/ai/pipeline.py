@@ -5,7 +5,7 @@ import numpy as np
 from torch import Tensor
 from typing import Dict, Any
 
-from backend.app.ai.image_helpers import ImageHelpers
+from .image_helpers import ImageHelpers
 
 from ..models.classifier import ClassifierModelType
 from ..models.image import ImageModelType
@@ -145,7 +145,8 @@ class PipelineImageText(nn.Module):
         })
 
         self.share_proj = ShareProjectionLayerV2(in_dim=out_feats_dim, out_dim=out_shared_dim, negative_slope=0.2)
-        
+        del self.share_proj.modality_codes["audios"]
+
         self.edge_weights_layer = EdgeWeightsLayerV3( 
             in_dim=out_shared_dim, 
             num_heads=8, 

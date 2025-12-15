@@ -11,6 +11,7 @@ import { Icon } from "../icon/icon";
 export class FileUploader {
   disableAddFiles = input<boolean>(false);
   filesChanged = output<UploadedFile[]>();
+  refreshFn = output<void>();
   uploadedFiles = signal<UploadedFile[]>([]);
   showModal = signal(false);
 

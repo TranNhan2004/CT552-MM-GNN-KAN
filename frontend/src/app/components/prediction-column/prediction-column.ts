@@ -1,20 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AIService } from '../../services/ai';
-import { ModelType } from '../../types/model';
+import { ModelType, SelectModelOptions } from '../../types/model';
 import { SelectedNodesData } from '../../types/node-list';
-import { ResultRes } from '../../types/result';
+import { PredictionResult, PredictionType, ResultRes } from '../../types/result';
 import { GraphDisplay } from '../graph-display/graph-display';
 import { Icon } from '../icon/icon';
-
-type ColumnType = 'cnn' | 'img-txt' | 'full';
-
-interface PredictionResult {
-  labelName: string;
-  prob: number;
-  weights?: number[][];
-}
 
 @Component({
   selector: 'app-prediction-column',
@@ -22,8 +14,9 @@ interface PredictionResult {
   templateUrl: './prediction-column.html',
   styleUrl: './prediction-column.css'
 })
-export class PredictionColumn {
-  columnType = input.required<ColumnType>();
+export class PredictionColumn implements OnInit{
+  predictionType = input.required<PredictionType>();
+  selectModelOptions = input.required<SelectModelOptions[]>();
   dataId = input<number | null>(null);
 
   selectedModel = signal<ModelType>('mobilenetv3small');
@@ -31,9 +24,10 @@ export class PredictionColumn {
   errorMessage = signal('');
   result = signal<ResultRes | null>(null);
   selectionData = signal<SelectedNodesData | null>(null);
+  openDropdown = signal<boolean>(false);
 
   showGraph = computed(() => {
-    const type = this.columnType();
+    const type = this.predictionType();
     return type === 'img-txt' || type === 'full';
   });
 
@@ -41,12 +35,12 @@ export class PredictionColumn {
     const result = this.result();
     if (!result) return null;
 
-    const type = this.columnType();
+    const type = this.predictionType();
     switch (type) {
-      case 'cnn':
+      case 'img':
         return {
-          labelName: result.cnnLabelName,
-          prob: result.cnnProb
+          labelName: result.imgLabelName,
+          prob: result.imgProb
         };
       case 'img-txt':
         return {
@@ -67,10 +61,31 @@ export class PredictionColumn {
 
   constructor(private aiService: AIService) {}
 
+  ngOnInit(): void {
+    // this.aiService.get(15).subscribe({
+    //   next: (data) => {
+    //     this.result.set(data);
+    //     console.log('Sample data for graph display:', data);
+    //   },
+    //   error: (err: HttpErrorResponse) => {
+    //     console.error('Error fetching sample data:', err);
+    //   }
+    // });
+  }
+
+  select(opt: any) {
+    this.selectedModel.set(opt.value);
+    this.openDropdown.set(false);
+  }
+
+  selectedModelObj() {
+    return this.selectModelOptions().find(o => o.value === this.selectedModel());
+  }
+
   getTitle(): string {
-    const type = this.columnType();
+    const type = this.predictionType();
     switch (type) {
-      case 'cnn': return 'Hình ảnh';
+      case 'img': return 'Hình ảnh';
       case 'img-txt': return 'Hình ảnh & Văn bản';
       case 'full': return 'Hình ảnh & Văn bản & Âm thanh';
       default: return '';
@@ -88,11 +103,11 @@ export class PredictionColumn {
     this.isLoading.set(true);
 
     const model = this.selectedModel();
-    const type = this.columnType();
+    const type = this.predictionType();
 
     let request;
     switch (type) {
-      case 'cnn':
+      case 'img':
         request = this.aiService.predictCNN(id, model);
         break;
       case 'img-txt':

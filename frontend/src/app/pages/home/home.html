@@ -1,11 +1,28 @@
-<div class="container mx-auto px-2 py-4 w-full">
+<div class="px-6 py-6 w-full">
   <div class="mb-6">
-    <app-input-section (dataProcessed)="onDataProcessed($event)" />
+    <app-input-section
+      (dataProcessed)="onDataProcessed($event)"
+      (refreshFn)="onRefresh()"
+    ></app-input-section>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <app-prediction-column columnType="cnn" [dataId]="uploadedDataId()" />
-    <app-prediction-column columnType="img-txt" [dataId]="uploadedDataId()" />
-    <app-prediction-column columnType="full" [dataId]="uploadedDataId()" />
+    <app-prediction-column
+      predictionType="img"
+      [selectModelOptions]="imageSelectModelOptions"
+      [dataId]="uploadedDataId()"
+    ></app-prediction-column>
+
+    <app-prediction-column
+      predictionType="img-txt"
+      [selectModelOptions]="imageTextSelectModelOptions"
+      [dataId]="uploadedDataId()"
+    ></app-prediction-column>
+
+    <app-prediction-column
+      predictionType="full"
+      [selectModelOptions]="fullSelectModelOptions"
+      [dataId]="uploadedDataId()"
+    ></app-prediction-column>
   </div>
 </div>
